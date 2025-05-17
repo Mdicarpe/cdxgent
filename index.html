@@ -7,10 +7,14 @@
     html,body{margin:0;height:100%;background:#000;display:flex;align-items:center;justify-content:center;}
     canvas{image-rendering:pixelated;}
     #save {position:fixed;top:12px;right:12px;padding:6px 10px;font:14px monospace;}
+    #seedInput,#setSeed {position:fixed;top:12px;left:12px;padding:6px 10px;font:14px monospace;}
+    #setSeed{left:140px;}
   </style>
 </head>
 <body>
 <button id="save">⤓ save</button>
+<input id="seedInput" placeholder="seed" />
+<button id="setSeed">set</button>
 
 <!-- p5.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"></script>
@@ -22,12 +26,27 @@ const NOISE_MAG   = 8;            // displacement strength
 const DITHER_PROB = 0.15;         // 15 % Bayer chance
 /* ------------------------------------------------------ */
 
+let seed = Math.floor(Math.random()*1e6);
+
+function applySeed(val){
+  if(val!==undefined) seed = parseInt(val) || seed;
+  randomSeed(seed);
+  noiseSeed(seed);
+  document.getElementById('seedInput').value = seed;
+  redraw();
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   noLoop();                       // draw() runs once
+  document.getElementById('setSeed').onclick=()=>
+    applySeed(document.getElementById('seedInput').value);
+  applySeed(seed);
 }
 
 function draw() {
+  randomSeed(seed);
+  noiseSeed(seed);
   background(0);
   const cell = width / GRID_SIZE;
   

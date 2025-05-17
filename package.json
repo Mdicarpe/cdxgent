@@ -1,0 +1,10 @@
+{
+  "name": "cdxgent",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node test/fps.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^22.7.1"
+  }
+}

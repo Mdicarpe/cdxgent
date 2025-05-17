@@ -7,10 +7,13 @@
     html,body{margin:0;height:100%;background:#000;display:flex;align-items:center;justify-content:center;}
     canvas{image-rendering:pixelated;}
     #save {position:fixed;top:12px;right:12px;padding:6px 10px;font:14px monospace;}
+    #metrics {position:fixed;bottom:12px;left:12px;padding:6px 10px;font:12px monospace;background:rgba(0,0,0,0.5);color:#fff;}
+    #metrics canvas{display:block;margin-top:4px;}
   </style>
 </head>
 <body>
 <button id="save">⤓ save</button>
+<div id="metrics"></div>
 
 <!-- p5.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"></script>
@@ -22,8 +25,12 @@ const NOISE_MAG   = 8;            // displacement strength
 const DITHER_PROB = 0.15;         // 15 % Bayer chance
 /* ------------------------------------------------------ */
 
+let metricsCanvas;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  metricsCanvas = createGraphics(256, 100);
+  document.getElementById('metrics').appendChild(metricsCanvas.canvas);
   noLoop();                       // draw() runs once
 }
 
@@ -71,6 +78,7 @@ function draw() {
 
   // 4 · optional Bayer dithering
   if (random() < DITHER_PROB) bayerDither();
+  displayMetrics();
 }
 
 /* --- tiny 4x4 Bayer matrix --- */
@@ -88,6 +96,33 @@ function bayerDither(){
     }
   }
   updatePixels();
+}
+
+function displayMetrics(){
+  loadPixels();
+  const bins=new Array(16).fill(0);
+  let sum=0,maxB=0;
+  for(let i=0;i<pixels.length;i+=4){
+    const r=pixels[i],g=pixels[i+1],b=pixels[i+2];
+    const br=0.299*r+0.587*g+0.114*b;
+    sum+=br;
+    if(br>maxB) maxB=br;
+    bins[Math.floor(br/16)]++;
+  }
+  const avg=sum/(width*height);
+  const ctx=metricsCanvas;
+  ctx.clear();
+  ctx.background(0,200);
+  const h=ctx.height-20;
+  const maxCount=Math.max(...bins);
+  ctx.stroke(255);
+  for(let i=0;i<bins.length;i++){
+    const bar=bins[i]/maxCount*h;
+    ctx.line(i*16+8,ctx.height-10,i*16+8,ctx.height-10-bar);
+  }
+  const div=document.getElementById('metrics');
+  div.firstChild&&div.firstChild.remove();
+  div.prepend(document.createTextNode(`avg ${avg.toFixed(1)} | max ${maxB.toFixed(1)}`));
 }
 
 /* --- save PNG --- */

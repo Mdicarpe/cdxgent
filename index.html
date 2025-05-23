@@ -38,6 +38,7 @@ function applySeed(val){
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  colorMode(HSB, 360, 100, 100, 255);
   noLoop();                       // draw() runs once
   document.getElementById('setSeed').onclick=()=>
     applySeed(document.getElementById('seedInput').value);
